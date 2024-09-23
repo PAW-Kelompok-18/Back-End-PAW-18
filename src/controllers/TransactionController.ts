@@ -39,7 +39,7 @@ export const createTransaction = async (
     // Update status seat to 'inTransaction'
     await SeatModel.updateMany(
       { _id: { $in: seats } },
-      { status: 'inTransaction' }
+      { status: 'inTransaction' },
     );
 
     // Make new transaction
@@ -57,11 +57,14 @@ export const createTransaction = async (
       const transactionCheck = await TransactionModel.findById(
         newTransaction._id,
       );
+      if (transactionCheck && transactionCheck.status === 'completed') {
+        return;
+      }
       if (transactionCheck && transactionCheck.status === 'pending') {
         // Change seat status back to 'available'
         await SeatModel.updateMany(
           { _id: { $in: seats } },
-          { status: 'available' }
+          { status: 'available' },
         );
         // Delete the transaction
         await TransactionModel.findByIdAndDelete(newTransaction._id);
@@ -175,7 +178,7 @@ export const updateTransactionStatus = async (
     if (status === 'completed') {
       await SeatModel.updateMany(
         { _id: { $in: transaction.seats } },
-        { status: 'booked' }
+        { status: 'booked' },
       );
     }
 
@@ -183,7 +186,7 @@ export const updateTransactionStatus = async (
     if (status === 'cancelled') {
       await SeatModel.updateMany(
         { _id: { $in: transaction.seats } },
-        { status: 'available' }
+        { status: 'available' },
       );
     }
 
@@ -225,7 +228,7 @@ export const deleteTransaction = async (
     // Change seat status back to 'available'
     await SeatModel.updateMany(
       { _id: { $in: transaction.seats } },
-      { status: 'available' }
+      { status: 'available' },
     );
 
     return res
