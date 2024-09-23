@@ -1,28 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import { SeatModel } from '../models/Seat';
+import { SeatModel, Seat } from '../models/Seat';
+import { DocumentType } from '@typegoose/typegoose';
 
 export class SeatController {
   // Create a new seat
   static async createSeat(req: Request, res: Response, next: NextFunction) {
     try {
-      const allKursi: { [key: string]: number } = {};
-      for (let i = 1; i <= 10; i++) {
-        for (let j = 1; j <= 6; j++) {
-          const seatNumber = String.fromCharCode(64 + j) + i;
-          const price = 50000;
-          allKursi[seatNumber] = price;
-        }
-      }
-      // const seatNumber: string = req.body.seatNumber;
-      // const price: string = req.body.price;
-      for (const seatNumber in allKursi) {
-        const price = allKursi[seatNumber];
-        await SeatModel.create({
-          seatNumber: seatNumber,
-          price: price,
-        });
-      }
-      res.status(201).json({ message: 'success' });
+      const seatNumber: string = req.body.seatNumber;
+      const price: string = req.body.price;
+      const newSeat: DocumentType<Seat> = await SeatModel.create({
+        seatNumber,
+        price,
+      });
+      res.status(201).json({ message: newSeat });
     } catch (error) {
       next(error);
     }
