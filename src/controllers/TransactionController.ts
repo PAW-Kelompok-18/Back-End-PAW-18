@@ -32,7 +32,7 @@ export const createTransaction = async (
       status: 'available',
     });
 
-    if (seatAvailability.length === seats.length) {
+    if (seatAvailability.length !== seats.length) {
       return res.status(400).json({ message: 'Some seats are unavailable' });
     }
 
