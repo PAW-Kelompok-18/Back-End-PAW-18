@@ -4,6 +4,7 @@ import { Router } from 'express';
 import {
   createTransaction,
   getUserTransactions,
+  updateTransactionStatus,
 } from '../controllers/TransactionController';
 import { protectUser } from '../middlewares/protectUser';
 
@@ -14,5 +15,16 @@ router.post('/', protectUser, createTransaction);
 
 // GET /transactions
 router.get('/', protectUser, getUserTransactions);
+
+// POST /transactions/:id/confirm
+router.post(
+  '/confirm/:id',
+  protectUser,
+  (req, res, next) => {
+    req.body.status = 'completed';
+    next();
+  },
+  updateTransactionStatus,
+);
 
 export default router;

@@ -16,6 +16,6 @@ router.get('/:seatNumber', SeatController.getSeatByNumber);
 // router.put('/:seatNumber', SeatController.updateSeat);
 
 // Delete a seat
-router.delete('/:seatNumber', SeatController.deleteSeat);
+// router.delete('/:seatNumber', SeatController.deleteSeat);
 
 export default router;
