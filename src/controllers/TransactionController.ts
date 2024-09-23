@@ -10,7 +10,7 @@ import { Types } from 'mongoose';
 export const createTransaction = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -32,7 +32,7 @@ export const createTransaction = async (
       status: 'available',
     });
 
-    if (seatAvailability.length === 0) {
+    if (seatAvailability.length === seats.length) {
       return res.status(400).json({ message: 'Some seats are unavailable' });
     }
 
@@ -55,7 +55,7 @@ export const createTransaction = async (
     // Set a timeout to revert seat status and delete transaction after 10 seconds
     setTimeout(async () => {
       const transactionCheck = await TransactionModel.findById(
-        newTransaction._id
+        newTransaction._id,
       );
       if (transactionCheck && transactionCheck.status === 'pending') {
         // Change seat status back to 'available'
@@ -81,7 +81,7 @@ export const createTransaction = async (
 export const getUserTransactions = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -104,7 +104,7 @@ export const getUserTransactions = async (
 export const getTransactionById = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -137,7 +137,7 @@ export const getTransactionById = async (
 export const updateTransactionStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -199,7 +199,7 @@ export const updateTransactionStatus = async (
 export const deleteTransaction = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
