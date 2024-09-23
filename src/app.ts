@@ -16,6 +16,7 @@ import session from 'express-session';
 import passport from 'passport';
 import corsOptions from './config/corsOptions';
 import transactionRoutes from './routes/transactionRoutes';
+import seatRoutes from './routes/seatRoutes';
 
 const app: Application = express();
 
@@ -53,6 +54,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 app.use('/auth', authRoutes);
 app.use('/transactions', transactionRoutes);
+app.use('/seat', seatRoutes);
 
 // 404 Route
 app.all('*', (_req: Request, _res: Response, next: NextFunction) => {
