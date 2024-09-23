@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Authentication</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+      .container {
+        text-align: center;
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-top: 10px;
+      }
+      #login-button {
+        background-color: #4285f4;
+        color: white;
+      }
+      #login-button:hover {
+        background-color: #357ae8;
+      }
+      #logout-button {
+        background-color: #db4437;
+        color: white;
+      }
+      #logout-button:hover {
+        background-color: #c53929;
+      }
+      #status {
+        margin-top: 1rem;
+        font-size: 14px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Google Authentication</h1>
+      <button id="login-button">Login with Google</button>
+      <button id="logout-button" style="display: none">Logout</button>
+      <div id="status"></div>
+    </div>
+
+    <script>
+      const loginButton = document.getElementById('login-button');
+      const logoutButton = document.getElementById('logout-button');
+      const status = document.getElementById('status');
+
+      function displayAuthStatus() {
+        const jwtCookie = Cookies.get('jwt');
+        if (jwtCookie) {
+          status.textContent = 'You are currently logged in.';
+          loginButton.style.display = 'none';
+          logoutButton.style.display = 'inline-block';
+        } else {
+          status.textContent = 'You are not logged in.';
+          loginButton.style.display = 'inline-block';
+          logoutButton.style.display = 'none';
+        }
+      }
+
+      loginButton.addEventListener('click', async () => {
+        try {
+          const response = await fetch('http://localhost:3500/auth/login', {
+            method: 'GET',
+            credentials: 'include', // This is important to include cookies in the request
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.isLoggedIn) {
+              status.textContent = data.message;
+              displayAuthStatus();
+            } else {
+              // If not logged in, redirect to Google OAuth
+              window.location.href = 'http://localhost:3500/auth/google';
+            }
+          } else {
+            throw new Error('Login check failed');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          status.textContent = 'Login check failed. Please try again.';
+        }
+      });
+
+      logoutButton.addEventListener('click', async () => {
+        try {
+          const response = await fetch('http://localhost:3500/auth/logout', {
+            method: 'POST',
+            credentials: 'include', // This is important to include cookies in the request
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            status.textContent = data.message;
+            setTimeout(displayAuthStatus, 2000);
+          } else {
+            throw new Error('Logout failed');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          status.textContent = 'Logout failed. Please try again.';
+        }
+      });
+
+      // Check auth status on page load
+      displayAuthStatus();
+
+      // Check auth status every 5 seconds
+      setInterval(displayAuthStatus, 5000);
+    </script>
+  </body>
+</html>

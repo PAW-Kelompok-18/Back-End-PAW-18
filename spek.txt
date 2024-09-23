@@ -1,0 +1,36 @@
+Berikut ini adalah beberapa hal yang perlu ditangani oleh backend untuk web yang anda kembangkan, berdasarkan spesifikasi yang disertakan dalam Figma dan deskripsi dari file yang anda upload:
+
+    Pengelolaan Database:
+        Menggunakan MongoDB sebagai DBMS, backend perlu mengelola skema database untuk menyimpan data pengguna, data kursi, dan data transaksi.
+        Memastikan integritas data seperti kesesuaian jumlah kursi yang tersedia dengan status kursi (tersedia, tidak tersedia, dalam transaksi, dan sudah dipesan).
+
+    Autentikasi dan Manajemen Sesi:
+        Implementasi login menggunakan Google OAuth untuk autentikasi.
+        Mengelola sesi pengguna, termasuk pembatasan waktu aktivitas pengguna dan pembatasan jumlah pengguna yang aktif secara bersamaan.
+
+    Manajemen Kursi dan Transaksi:
+        Fungsionalitas untuk memilih kursi, termasuk memilih lebih dari satu kursi per transaksi.
+        Pembatasan pembelian kursi berdasarkan musim atau kategori kursi (misalnya VIP).
+        Mengelola status kursi selama proses pembelian untuk menghindari konflik (misalnya, memastikan kursi tidak dibeli oleh pengguna lain saat transaksi sedang berlangsung).
+
+    Konfirmasi dan Generasi Tiket:
+        Proses konfirmasi pembelian yang mencakup pengambilan data kursi dan pembayaran.
+        Generasi tiket yang berisi QR code untuk setiap kursi yang berhasil dibeli.
+        Mengirimkan tiket kepada pengguna via email atau menyediakannya dalam format yang dapat diunduh.
+
+    Logistik Server:
+        Menggunakan dua server terpisah:
+            Server pertama untuk proses login, mengelola waiting list, dan tracking pengguna yang aktif.
+            Server kedua untuk proses pembelian tiket.
+
+    Middleware dan Framework:
+        Menggunakan Express.js sebagai framework dalam Node.js, membantu dalam pembuatan routing yang efisien dan pengelolaan middleware.
+        Penerapan middleware untuk autentikasi, logging, error handling, dan lain-lain.
+
+    Pengembangan dan Integrasi API:
+        Pengembangan API untuk interaksi frontend dan backend seperti API untuk fetch status kursi, API untuk proses pembelian, dan API untuk autentikasi.
+        Memastikan API mendukung asinkron operasi dan dapat menangani beban traffic tinggi dengan baik.
+
+    Keamanan:
+        Implementasi keamanan untuk proteksi data pengguna dan transaksi.
+        Menggunakan protokol HTTPS, enkripsi data sensitif, dan pengamanan endpoint API.
