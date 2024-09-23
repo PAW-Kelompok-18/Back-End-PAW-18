@@ -5,6 +5,7 @@ import {
   createTransaction,
   getUserTransactions,
   updateTransactionStatus,
+  deleteTransaction,
 } from '../controllers/TransactionController';
 import { protectUser } from '../middlewares/protectUser';
 
@@ -17,7 +18,7 @@ router.post('/', protectUser, createTransaction);
 router.get('/', protectUser, getUserTransactions);
 
 // POST /transactions/:id/confirm
-router.post(
+router.patch(
   '/confirm/:id',
   protectUser,
   (req, res, next) => {
@@ -26,5 +27,7 @@ router.post(
   },
   updateTransactionStatus,
 );
+
+router.delete('/:id', protectUser, deleteTransaction);
 
 export default router;
