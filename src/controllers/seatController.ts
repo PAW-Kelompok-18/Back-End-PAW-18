@@ -18,11 +18,24 @@ export class SeatController {
     }
   }
 
-  // Get all seats
   static async getAllSeats(req: Request, res: Response, next: NextFunction) {
     try {
       const seats = await SeatModel.find();
-      res.json(seats);
+      
+      // Sort the seats
+      const sortedSeats = seats.sort((a, b) => {
+        // First, compare the row letters
+        if (a.seatNumber[0] !== b.seatNumber[0]) {
+          return a.seatNumber.localeCompare(b.seatNumber);
+        }
+        
+        // If the row letters are the same, compare the seat numbers
+        const aNum = parseInt(a.seatNumber.slice(1));
+        const bNum = parseInt(b.seatNumber.slice(1));
+        return aNum - bNum;
+      });
+
+      res.json(sortedSeats);
     } catch (error) {
       next(error);
     }
@@ -32,7 +45,7 @@ export class SeatController {
   static async getSeatByNumber(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     try {
       const seat = await SeatModel.findOne({
@@ -53,7 +66,7 @@ export class SeatController {
       const updatedSeat = await SeatModel.findOneAndUpdate(
         { seatNumber: req.params.seatNumber },
         req.body,
-        { new: true },
+        { new: true }
       );
       if (!updatedSeat) {
         return res.status(404).json({ message: 'Seat not found' });
