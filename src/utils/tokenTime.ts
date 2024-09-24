@@ -23,5 +23,5 @@ function createTokenTime(input: string) {
   };
 }
 
-const tokenTime = createTokenTime('3m');
+const tokenTime = createTokenTime('1d');
 export default tokenTime;
