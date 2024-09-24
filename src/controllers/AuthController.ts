@@ -22,31 +22,10 @@ export class AuthController {
     }
 
     try {
-      const isAjax = req.xhr || req.headers.accept?.includes('json');
-
-      if (isAjax) {
-        // If it's an AJAX request, send JSON response
-        res.json({
-          isLoggedIn: true,
-          message: 'Logged in successfully',
-          user: {
-            email: user.email,
-          },
-        });
+      if (req.headers.referer) {
+        res.redirect(`${req.headers.referer}/ticket`);
       } else {
-        // If it's a direct browser request (like from the popup), send HTML
-        res.send(`
-          <html>
-            <body>
-              <script>
-                if (window.opener) {
-                  window.opener.postMessage('login-success', '*');
-                }
-                window.close();
-              </script>
-            </body>
-          </html>
-        `);
+        res.json({ message: 'Logged in successfully' });
       }
     } catch (error) {
       console.error('Error generating token:', error);
@@ -58,21 +37,18 @@ export class AuthController {
   public static async createCookie(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     // Ensure that req.user is populated
     const user = req.user as DocumentType<User>;
 
     try {
-      const tokenRecord = await UserTokenModel.findOne({ userId: user._id });
-      if (tokenRecord) throw createHttpError(400, 'Token already exists');
-
       const token = await user.generateToken();
       res.cookie('jwt', token, {
         httpOnly: true, // Mitigates XSS attacks
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        secure: true, // Use secure cookies in production
         maxAge: tokenTime.number, // in miliseconds
-        sameSite: 'lax', // CSRF protection
+        sameSite: 'none', // CSRF protection
       });
 
       res.redirect('/auth/login');
