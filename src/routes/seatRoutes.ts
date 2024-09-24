@@ -1,5 +1,6 @@
 import express from 'express';
 import { SeatController } from '../controllers/seatController';
+import { protectUser } from '../middlewares/protectUser';
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const router = express.Router();
 router.post('/', SeatController.createSeat);
 
 // Get all seats
-router.get('/', SeatController.getAllSeats);
+router.get('/', protectUser, SeatController.getAllSeats);
 
 // Get a single seat by ID
 router.get('/:seatNumber', SeatController.getSeatByNumber);
