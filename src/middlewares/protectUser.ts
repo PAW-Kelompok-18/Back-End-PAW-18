@@ -4,30 +4,28 @@ import jwt from 'jsonwebtoken';
 import { User, UserModel } from '../models/User';
 import { DocumentType } from '@typegoose/typegoose';
 import createHttpError from 'http-errors';
+import { UserTokenModel } from '../models/UserToken';
 
 export async function protectUser(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): Promise<void> {
   try {
-    // const token = req.cookies['jwt'];
-    // if (!token) throw createHttpError(401, 'User not authenticated');
-    // const decoded = jwt.verify(
-    //   token,
-    //   process.env.JWT_SECRET!,
-    // ) as jwt.JwtPayload;
-    // const [tokenRecord, user] = await Promise.all([
-    //   UserTokenModel.findOne({ token, userId: decoded._id }),
-    //   UserModel.findById(decoded._id) as Promise<DocumentType<User> | null>,
-    // ]);
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) throw createHttpError(401, 'User not authenticated');
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    ) as jwt.JwtPayload;
+    const [tokenRecord, user] = await Promise.all([
+      UserTokenModel.findOne({ token, userId: decoded._id }),
+      UserModel.findById(decoded._id) as Promise<DocumentType<User> | null>,
+    ]);
 
-    // if (!tokenRecord || !user)
-    //   throw createHttpError(401, 'User not authenticated');
+    if (!tokenRecord || !user)
+      throw createHttpError(401, 'User not authenticated');
 
-    const userId = '66ed8a979ceca44acc5716f7';
-    const user: DocumentType<User> | null = await UserModel.findById(userId);
-    // req.user = user;
     if (!user) throw createHttpError(401, 'User not authenticated');
     req.user = user;
     next();
