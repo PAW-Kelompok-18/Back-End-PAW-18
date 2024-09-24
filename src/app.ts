@@ -66,6 +66,7 @@ app.all('*', (_req: Request, _res: Response, next: NextFunction) => {
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof createHttpError.HttpError) {
     const httpError = err as createHttpError.HttpError;
+    console.error(httpError);
     res.status(httpError.status).json({ message: httpError.message });
   } else {
     if (process.env.NODE_ENV === 'development') console.error(err);
