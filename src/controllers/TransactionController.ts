@@ -10,7 +10,7 @@ import { Types } from 'mongoose';
 export const createTransaction = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -39,7 +39,7 @@ export const createTransaction = async (
     // Update status seat to 'inTransaction'
     await SeatModel.updateMany(
       { _id: { $in: seats } },
-      { status: 'inTransaction' }
+      { status: 'inTransaction' },
     );
 
     // Make new transaction
@@ -55,7 +55,7 @@ export const createTransaction = async (
     // Set a timeout to revert seat status and delete transaction after 10 seconds
     setTimeout(async () => {
       const transactionCheck = await TransactionModel.findById(
-        newTransaction._id
+        newTransaction._id,
       );
       if (transactionCheck && transactionCheck.status === 'completed') {
         return;
@@ -64,7 +64,7 @@ export const createTransaction = async (
         // Change seat status back to 'available'
         await SeatModel.updateMany(
           { _id: { $in: seats } },
-          { status: 'available' }
+          { status: 'available' },
         );
         // Delete the transaction
         await TransactionModel.findByIdAndDelete(newTransaction._id);
@@ -84,7 +84,7 @@ export const createTransaction = async (
 export const getUserTransactions = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -107,7 +107,7 @@ export const getUserTransactions = async (
 export const getTransactionById = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -136,20 +136,17 @@ export const getTransactionById = async (
   }
 };
 
-// Update Transaction Status
 export const updateTransactionStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
-
     if (!user) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    const { id } = req.params;
     const { status } = req.body;
 
     // Validate status
@@ -158,41 +155,46 @@ export const updateTransactionStatus = async (
       return res.status(400).json({ message: 'Invalid status' });
     }
 
-    const transaction = await TransactionModel.findById(id);
+    // Find all pending transactions for the user
+    const transactions = await TransactionModel.find({
+      userId: user._id,
+      status: 'pending',
+    });
 
-    if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+    if (transactions.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'No pending transactions found for the user' });
     }
 
-    // Make sure only the user who created the transaction can change it.
-    if (transaction.userId.toString() !== user._id.toString()) {
-      return next(createHttpError(403, 'Forbidden access'));
-    }
+    // Update each transaction
+    const updatePromises = transactions.map(async (transaction) => {
+      transaction.status = status as 'pending' | 'completed';
+      transaction.completedAt = status === 'completed' ? new Date() : undefined;
+      await transaction.save();
 
-    transaction.status = status;
-    transaction.completedAt = status === 'completed' ? new Date() : undefined;
+      // Update seat statuses
+      if (status === 'completed') {
+        await SeatModel.updateMany(
+          { _id: { $in: transaction.seats } },
+          { status: 'booked' },
+        );
+      } else if (status === 'cancelled') {
+        await SeatModel.updateMany(
+          { _id: { $in: transaction.seats } },
+          { status: 'available' },
+        );
+      }
 
-    await transaction.save();
+      return transaction;
+    });
 
-    // Change status to booked if transaction is completed
-    if (status === 'completed') {
-      await SeatModel.updateMany(
-        { _id: { $in: transaction.seats } },
-        { status: 'booked' }
-      );
-    }
+    const updatedTransactions = await Promise.all(updatePromises);
 
-    // If the transaction is cancelled, change the seat status back to 'available'
-    if (status === 'cancelled') {
-      await SeatModel.updateMany(
-        { _id: { $in: transaction.seats } },
-        { status: 'available' }
-      );
-    }
-
-    return res
-      .status(200)
-      .json({ message: 'Transaction updated successfully', transaction });
+    return res.status(200).json({
+      message: 'Transactions updated successfully',
+      updatedTransactions: updatedTransactions,
+    });
   } catch (error) {
     next(error);
   }
@@ -202,7 +204,7 @@ export const updateTransactionStatus = async (
 export const deleteTransaction = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user as DocumentType<User>;
@@ -228,7 +230,7 @@ export const deleteTransaction = async (
     // Change seat status back to 'available'
     await SeatModel.updateMany(
       { _id: { $in: transaction.seats } },
-      { status: 'available' }
+      { status: 'available' },
     );
 
     return res
