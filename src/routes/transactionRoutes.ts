@@ -19,7 +19,7 @@ router.get('/', protectUser, getUserTransactions);
 
 // POST /transactions/:id/confirm
 router.patch(
-  '/confirm/:id',
+  '/confirm',
   protectUser,
   (req, res, next) => {
     req.body.status = 'completed';
